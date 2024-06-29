@@ -5,28 +5,32 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"github.com/gorilla/mux"
 )
 
-
-//Create a type struct APiServer
+// Create a type struct APiServer
 type APIServer struct {
 	listenAddr string
+	store      Storage
 }
-//Initialize a new APIServer
-func newAPIServer(listenAddr string) *APIServer {
+
+// Initialize a new APIServer
+func newAPIServer(listenAddr string, store Storage) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
+		store:      store,
 	}
 }
 
 func (s *APIServer) Run() {
-	router := mux.NewRouter()
-	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
+	router := mux.NewRouter()                                          //Create new instance of router
+	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount)) //Route path to
 	router.HandleFunc("/account/{id}", makeHTTPHandleFunc(s.handleGetAccountById))
 	log.Println("JSON API server is running on port: ", s.listenAddr)
 	http.ListenAndServe(s.listenAddr, router)
 }
+
 func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
 	switch r.Method {
 	case "GET":
@@ -39,11 +43,12 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 		return fmt.Errorf("method not allowed %s", r.Method)
 	}
 }
+
 // An origin HandleFunc will not return an error
 // Ex: func handleGetAccount(w  http.ResponseWriter, r *http.Request){}
-// With this we'll have to handle the error inside of each HandleFunc and it will get messy. 
+// With this we'll have to handle the error inside of each HandleFunc and it will get messy.
 // So in order to reduce the code we'll just handle the error inside of a single
-// makeHandleFunc function 
+// makeHandleFunc function
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
 	account := NewAccount("Hao", "Truong", "0828040144")
 	return WriteJSON(w, http.StatusCreated, account)
@@ -62,10 +67,11 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
-//Sub Func
+
+// Sub Func
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(v)
 }
 
