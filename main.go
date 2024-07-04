@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -10,7 +9,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%+v", db)
-	// server := newAPIServer(":3000")
-	// server.Run()
+	db.createTableAccount()
+	server := newAPIServer(":3000", db)
+	server.Run()
 }

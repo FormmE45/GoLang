@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"math/rand"
+	"time"
+)
 
 type CreateAccountRequest struct {
 	FirstName string
@@ -11,21 +14,16 @@ type Account struct {
 	ID        int
 	FirstName string
 	LastName  string
-	Number    string
+	Number    int64
 	Balance   int64
 	CreatedAt time.Time
 }
 
-var id int = 0
-var idadrr = &id
-
-func NewAccount(FirstName string, LastName string, Number string) Account {
-	*idadrr += 1
+func NewAccount(FirstName string, LastName string) Account {
 	return Account{
-		ID:        *idadrr,
 		FirstName: FirstName,
 		LastName:  LastName,
-		Number:    Number,
+		Number:    int64(rand.Intn(100000)),
 		CreatedAt: time.Now().UTC(),
 	}
 }

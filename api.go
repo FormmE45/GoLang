@@ -49,17 +49,33 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 // With this we'll have to handle the error inside of each HandleFunc and it will get messy.
 // So in order to reduce the code we'll just handle the error inside of a single
 // makeHandleFunc function
-func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	account := NewAccount("Hao", "Truong", "0828040144")
-	return WriteJSON(w, http.StatusCreated, account)
+func (s *APIServer) handleGetAccount(responsewriter http.ResponseWriter, request *http.Request) error {
+	accounts, err := s.store.GetAccounts()
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(responsewriter, http.StatusOK, accounts)
 }
-func (s *APIServer) handleGetAccountById(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
+func (s *APIServer) handleGetAccountById(responsewriter http.ResponseWriter, request *http.Request) error {
+	vars := mux.Vars(request)
 	fmt.Println(vars)
-	return WriteJSON(w, http.StatusFound, &Account{})
+	return WriteJSON(responsewriter, http.StatusFound, &Account{})
 }
-func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
+func (s *APIServer) handleCreateAccount(responsewriter http.ResponseWriter, request *http.Request) error {
+	createAccountReq := new(CreateAccountRequest)
+	account := NewAccount(createAccountReq.FirstName, createAccountReq.LastName)
+	if err := decodeFromRequestBodyToAccount(request, &account); err != nil {
+		return err
+	}
+	if err := s.store.CreateAccount(&account); err != nil {
+		return err
+	}
+	return WriteJSON(responsewriter, http.StatusOK, account)
+}
+func decodeFromRequestBodyToAccount(request *http.Request, account *Account) error {
+	err := json.NewDecoder(request.Body).Decode(account)
+	return err
 }
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
 	return nil
